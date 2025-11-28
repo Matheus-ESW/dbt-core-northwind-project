@@ -16,36 +16,38 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v3
       with:
-        python-version: 3.8
+        python-version: 3.12
 
-    - name: Install dbt
+    - name: Install dbt-postgres
       run: pip install dbt-postgres
 
-    - name: Set up dbt profile
+    - name: Create dbt profile
       run: |
         mkdir -p ~/.dbt
-        echo "
+        cat << 'EOF' > ~/.dbt/profiles.yml
         northwind:
           target: prod
           outputs:
             prod:
               type: postgres
-              host: ${{ secrets.DB_HOST_PROD }}
+              host: "${{ secrets.DB_HOST_PROD }}"
               port: ${{ secrets.DB_PORT_PROD }}
-              user: ${{ secrets.DB_USER_PROD }}
-              password: ${{ secrets.DB_PASS_PROD }}
-              dbname: ${{ secrets.DB_NAME_PROD }}
-              schema: ${{ secrets.DB_SCHEMA_PROD }}
+              user: "${{ secrets.DB_USER_PROD }}"
+              password: "${{ secrets.DB_PASS_PROD }}"
+              dbname: "${{ secrets.DB_NAME_PROD }}"
+              schema: "${{ secrets.DB_SCHEMA_PROD }}"
               threads: ${{ secrets.DB_THREADS_PROD }}
-        " > ~/.dbt/profiles.yml
+              keepalives_idle: 0
+        EOF
 
-    - name: Install dependencies and generate docs
+    - name: Generate dbt docs
       run: |
-        cd northwind
+        cd dbt
+        dbt deps
         dbt docs generate
 
     - name: Deploy to GitHub Pages
       uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.GH_PAT }}
-        publish_dir: ./northwind/target
+        publish_dir: dbt/target
