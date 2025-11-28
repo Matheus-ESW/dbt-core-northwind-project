@@ -1,0 +1,18 @@
+# dbt_project.yml
+
+name: 'northwind'
+version: '1.0.0'
+config-version: 2
+
+# Conexão com o banco de dados
+profile: 'northwind'
+
+# Configurações dos modelos
+models:
+  northwind:
+    orders:
+      materialized: table
+    order_details:
+      materialized: table
+    total_revenues_1997:
+      materialized: view
